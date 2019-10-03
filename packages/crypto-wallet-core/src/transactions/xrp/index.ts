@@ -1,4 +1,5 @@
 import { RippleAPI } from 'ripple-lib';
+import rippleBinaryCodec from 'ripple-binary-codec';
 import { Key } from '../../derivation';
 import { Payment } from 'ripple-lib/dist/npm/transaction/payment';
 import { Instructions, Prepare, TransactionJSON } from 'ripple-lib/dist/npm/transaction/types';
@@ -373,12 +374,13 @@ export class XRPTxProvider {
     };
 
     let rippleAPI = new RippleAPI();
-    return this._preparePayment(sourceAddress, payment, instructions, rippleAPI).txJSON;
+    let txJSON = this._preparePayment(sourceAddress, payment, instructions, rippleAPI).txJSON;
+    return rippleBinaryCodec.encode(txJSON);
   }
 
   sign(params: { tx: string; key: Key; }) {
     const { tx, key } = params;
-    const txJSON = tx;
+    const txJSON = rippleBinaryCodec.decode(tx);
     let rippleAPI = new RippleAPI();
     const signedTx = rippleAPI.sign(txJSON,{
       privateKey: key.privKey,
